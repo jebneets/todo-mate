@@ -8,6 +8,7 @@
  */
 
 import { initTRPC, TRPCError } from "@trpc/server";
+import { unstable_noStore as noStore } from "next/cache";
 import superjson from "superjson";
 import { ZodError } from "zod";
 
@@ -28,6 +29,7 @@ import { db } from "~/server/db";
  * @see https://trpc.io/docs/server/context
  */
 export const createTRPCContext = async (opts: { headers: Headers }) => {
+  noStore();
   const session = await auth();
 
   return {
