@@ -9,14 +9,12 @@ async function main() {
         name: "Alice Johnson",
         email: "alice@example.com",
         image: "https://example.com/avatar1.png",
-        createdAt: new Date("2025-07-27T20:14:57.961Z"),
       },
       {
         id: "71b209c3-94a6-4e39-a030-35fbf034ba97",
         name: "Bob Smith",
         email: "bob@example.com",
         image: "https://example.com/avatar2.png",
-        createdAt: new Date("2025-07-27T20:14:57.961Z"),
       },
     ],
   });
@@ -28,14 +26,12 @@ async function main() {
         userId: "e43a44ec-610a-4aa8-a5d3-a87860cece39",
         name: "List 1 for Alice",
         icon: "💼",
-        createdAt: new Date("2025-07-27T20:14:57.962Z"),
       },
       {
         id: "2f765de8-efca-4b54-99d6-61dbd4657305",
         userId: "e43a44ec-610a-4aa8-a5d3-a87860cece39",
         name: "List 2 for Alice",
         icon: "🛒",
-        createdAt: new Date("2025-07-27T20:14:57.962Z"),
       },
     ],
   });
@@ -50,7 +46,6 @@ async function main() {
         dueDate: new Date("2025-07-29"),
         isComplete: true,
         priority: "low",
-        createdAt: new Date("2025-07-27T20:14:57.962Z"),
       },
       {
         id: "c0b2eb5a-cce0-41e1-93c2-da0e6a692df9",
@@ -60,7 +55,6 @@ async function main() {
         dueDate: new Date("2025-07-30"),
         isComplete: true,
         priority: "high",
-        createdAt: new Date("2025-07-27T20:14:57.962Z"),
       },
     ],
   });

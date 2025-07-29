@@ -1,0 +1,66 @@
+Your task is to design and build the user interface for a task management, to do list web application.
+You must use the provided image as a strict design reference, @mockup.png .   The final UI should adopt its visual style.
+
+Font: Use the "Archivo" family of fonts
+
+Overall Style: The overall design must be a sleek modern light themed design with rounded edges for elements like cards, buttons and input fields, consistent with the reference image.
+
+Please use the following steps:
+
+Component design: Based on the mockup image and reference style, first define and list the necessary UI components (e.g. task lists item, tasks, admin panel buttons)
+UI Mockup Build: Build the UI for the main task list interface.  Populate it with realistic tasks.  Include several task lists.
+Responsiveness: Ensure that the layout is fully responsive and provides a clean user experience on both desktop and mobile devises.
+
+Do not rely on any packages outside of what is already in the workspace.
+
+
+-----------------------------------------------------------------    Too big of response. --------------------------------------
+
+
+Your task is to design and build the user interface for a task management, to do list web application. You must use the provided image as a strict design reference, @mockup.png . The final UI should adopt its visual style.
+Overall Style: The overall design must be a sleek modern light themed design with rounded edges for elements like cards, buttons and input fields, consistent with the reference image.
+Component design: Based on the mockup image and reference style, first define and list the necessary UI components UI Mockup Build: Build the UI for the main task list interface. Populate it with realistic tasks.
+Responsiveness: Ensure that the layout is fully responsive and provides a clean user experience.
+
+
+
+
+Prompt for Gemini Code Assistant:
+Primary Role: You are an expert senior frontend developer specializing in Next.js, TypeScript, and Tailwind CSS.
+
+Project Goal:
+Your task is to convert the provided task list application design, which currently exists as static HTML and CSS, into a fully functional, modern Next.js web application.
+
+Core Requirements & Technology Stack:
+Framework: Next.js (using the App Router).
+Language: TypeScript.
+Styling: Tailwind CSS. All existing CSS styles must be translated into Tailwind utility classes. Do not use separate CSS files.
+Architecture: The application must be built with reusable, modular components.
+
+Step-by-Step Instructions:
+1. Project Structure:
+First, define the complete file structure for the Next.js application. It should follow best practices, including:
+app/ for the main page and layout.
+components/ for all the reusable UI components.
+lib/ or data/ for the mock data.
+
+2. Create Reusable Components:
+Based on the task UI, create the following individual React components inside the components/ directory. Each component must be a separate file, use TypeScript for props, and be styled with Tailwind CSS.
+Sidebar.tsx: A component that has the list of task lists.
+TaskCard.tsx: A component that shows a task summary.
+Header.tsx: The panel that shows the data along the top of the page, date and current user.
+
+3. Implement Mock Data:
+Create a separate file (e.g., lib/mockData.ts) to store all the sample data needed to populate the UI. This should include:
+A list of users, tasks and task lists.
+
+4. Build the Main Page:
+In the app/page.tsx file, assemble the complete chat interface by importing and arranging the components you created. Use the mock data to populate the components dynamically. The layout should be a three-column design (Chat List, Chat Window, Contact Info Panel).
+
+5. Ensure Responsiveness:
+The final layout must be fully responsive. On smaller screens (mobile), the layout should adapt gracefully. For example, it could show only the Task List initially, and clicking a chat would navigate to the Task Details.
+Final Output:
+Please provide the complete code for every file, including the project structure, all components, the mock data file, and the main page!
+
+
+
