@@ -3,7 +3,11 @@
 import React from 'react';
 import { useSession } from 'next-auth/react';
 
-const Header = () => {
+interface HeaderProps {
+  onCreateList?: () => void;
+}
+
+const Header: React.FC<HeaderProps> = ({ onCreateList }) => {
   const { data: session } = useSession();
   const currentDate = new Date().toLocaleDateString('en-US', { 
     day: 'numeric', 
@@ -24,7 +28,12 @@ const Header = () => {
           <i className="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
           <input type="text" placeholder="Search List" className="bg-gray-100 rounded-lg py-2 pl-10 pr-4 focus:outline-none" />
         </div>
-        <button className="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold">+ Add New List</button>
+        <button 
+          onClick={onCreateList}
+          className="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+        >
+          + Add New List
+        </button>
         <div className="flex items-center space-x-4">
           <i className="fas fa-bell text-xl text-gray-600"></i>
           <div className="relative group">

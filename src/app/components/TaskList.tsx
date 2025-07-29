@@ -2,19 +2,18 @@
 
 import React, { useState } from 'react';
 import { Task } from '@/lib/mockData';
+import { api } from '~/trpc/react';
 
 interface TaskListProps {
   listName: string;
+  taskListId: string;
   initialTasks?: Task[];
-  onTaskAdd?: (task: Omit<Task, 'id'>) => void;
-  onTaskDelete?: (taskId: number) => void;
-  onTaskToggle?: (taskId: number) => void;
 }
 
 interface TaskItemProps {
-  task: Task & { completed?: boolean };
-  onDelete: (taskId: number) => void;
-  onToggle: (taskId: number) => void;
+  task: Task & { completed?: boolean; dbId?: string };
+  onDelete: (taskId: string) => void;
+  onToggle: (taskId: string) => void;
 }
 
 const TaskItem: React.FC<TaskItemProps> = ({ task, onDelete, onToggle }) => {
@@ -25,7 +24,7 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, onDelete, onToggle }) => {
           <input
             type="checkbox"
             checked={task.completed || false}
-            onChange={() => onToggle(task.id)}
+            onChange={() => onToggle(task.dbId || task.id.toString())}
             className="h-5 w-5 mt-1 text-brand-blue border-gray-300 rounded focus:ring-brand-blue"
           />
           <div className="flex-1">
@@ -51,7 +50,7 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, onDelete, onToggle }) => {
           </div>
         </div>
         <button
-          onClick={() => onDelete(task.id)}
+          onClick={() => onDelete(task.dbId || task.id.toString())}
           className="ml-4 text-gray-400 hover:text-red-500 transition-colors"
           title="Delete task"
         >
@@ -64,60 +63,83 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, onDelete, onToggle }) => {
 
 const TaskList: React.FC<TaskListProps> = ({ 
   listName,
-  initialTasks = [], 
-  onTaskAdd, 
-  onTaskDelete, 
-  onTaskToggle 
+  taskListId,
+  initialTasks = []
 }) => {
-  const [tasks, setTasks] = useState<(Task & { completed?: boolean })[]>(
-    initialTasks.map(task => ({ ...task, completed: false }))
-  );
+  const { data: tasks, refetch } = api.task.getByTaskListId.useQuery({ taskListId });
   const [showAddForm, setShowAddForm] = useState(false);
   const [newTask, setNewTask] = useState({
     title: '',
     description: '',
-    time: '',
-    color: 'blue' as Task['color']
+    dueDate: '',
+    priority: 'medium' as 'low' | 'medium' | 'high'
   });
   const [showCompleted, setShowCompleted] = useState(false);
+
+  const createTaskMutation = api.task.create.useMutation({
+    onSuccess: () => {
+      refetch();
+      setNewTask({
+        title: '',
+        description: '',
+        dueDate: '',
+        priority: 'medium'
+      });
+      setShowAddForm(false);
+    },
+  });
+
+  const deleteTaskMutation = api.task.delete.useMutation({
+    onSuccess: () => {
+      refetch();
+    },
+  });
+
+  const toggleTaskMutation = api.task.toggleComplete.useMutation({
+    onSuccess: () => {
+      refetch();
+    },
+  });
 
   const handleAddTask = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newTask.title.trim()) return;
 
-    const task: Task & { completed?: boolean } = {
-      id: Date.now(), // Temporary ID generation
+    createTaskMutation.mutate({
+      taskListId,
       title: newTask.title,
-      description: newTask.description,
-      time: newTask.time,
-      color: newTask.color,
-      completed: false
-    };
-
-    setTasks(prev => [...prev, task]);
-    onTaskAdd?.(newTask);
-    setNewTask({ title: '', description: '', time: '', color: 'blue' });
-    setShowAddForm(false);
+      notes: newTask.description || undefined,
+      dueDate: newTask.dueDate ? new Date(newTask.dueDate) : undefined,
+      priority: newTask.priority,
+    });
   };
 
-  const handleDeleteTask = (taskId: number) => {
-    setTasks(prev => prev.filter(task => task.id !== taskId));
-    onTaskDelete?.(taskId);
+  const handleDeleteTask = (taskId: string) => {
+    deleteTaskMutation.mutate({ id: taskId });
   };
 
-  const handleToggleTask = (taskId: number) => {
-    setTasks(prev => prev.map(task => 
-      task.id === taskId ? { ...task, completed: !task.completed } : task
-    ));
-    onTaskToggle?.(taskId);
+  const handleToggleTask = (taskId: string) => {
+    toggleTaskMutation.mutate({ id: taskId });
   };
 
-  const filteredTasks = tasks.filter(task => 
+  // Convert database tasks to display format for compatibility
+  const displayTasks = tasks ? tasks.map(task => ({
+    id: parseInt(task.id.replace(/-/g, '').slice(0, 8), 16),
+    title: task.title,
+    description: task.notes || 'No description',
+    time: task.dueDate ? new Date(task.dueDate).toLocaleDateString() : 'No due date',
+    color: task.priority === 'high' ? 'purple' as const : 
+           task.priority === 'low' ? 'green' as const : 'blue' as const,
+    completed: task.isComplete,
+    dbId: task.id // Keep original ID for database operations
+  })) : [];
+
+  const filteredTasks = displayTasks.filter(task => 
     showCompleted ? task.completed : !task.completed
   );
 
-  const activeTasks = tasks.filter(task => !task.completed);
-  const completedTasks = tasks.filter(task => task.completed);
+  const activeTasks = displayTasks.filter(task => !task.completed);
+  const completedTasks = displayTasks.filter(task => task.completed);
 
   return (
     <div className="space-y-6">
@@ -187,27 +209,24 @@ const TaskList: React.FC<TaskListProps> = ({
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Time</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Due Date</label>
                 <input
-                  type="text"
-                  value={newTask.time}
-                  onChange={(e) => setNewTask(prev => ({ ...prev, time: e.target.value }))}
+                  type="date"
+                  value={newTask.dueDate}
+                  onChange={(e) => setNewTask(prev => ({ ...prev, dueDate: e.target.value }))}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-blue focus:border-transparent"
-                  placeholder="e.g., 10:30 AM - 12:00 PM"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Color</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Priority</label>
                 <select
-                  value={newTask.color}
-                  onChange={(e) => setNewTask(prev => ({ ...prev, color: e.target.value as Task['color'] }))}
+                  value={newTask.priority}
+                  onChange={(e) => setNewTask(prev => ({ ...prev, priority: e.target.value as 'low' | 'medium' | 'high' }))}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-blue focus:border-transparent"
                 >
-                  <option value="blue">Blue</option>
-                  <option value="purple">Purple</option>
-                  <option value="yellow">Yellow</option>
-                  <option value="pink">Pink</option>
-                  <option value="green">Green</option>
+                  <option value="low">Low</option>
+                  <option value="medium">Medium</option>
+                  <option value="high">High</option>
                 </select>
               </div>
             </div>

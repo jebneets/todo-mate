@@ -198,8 +198,15 @@ function LandingPage() {
 
 // Todo app component for authenticated users
 function TodoApp() {
-  const { data: taskListsData, isLoading } = api.taskList.getAll.useQuery();
+  const { data: taskListsData, isLoading, refetch } = api.taskList.getAll.useQuery();
   const [activeListId, setActiveListId] = useState<string>('');
+  
+  const createTaskListMutation = api.taskList.create.useMutation({
+    onSuccess: (newList) => {
+      refetch(); // Refresh the list
+      setActiveListId(newList.id); // Select the new list
+    },
+  });
   
   // Set active list ID when data loads
   useEffect(() => {
@@ -212,6 +219,16 @@ function TodoApp() {
   
   const handleListSelect = (listId: string) => {
     setActiveListId(listId);
+  };
+
+  const handleCreateFirstList = () => {
+    const listName = prompt('Enter a name for your new list:');
+    if (listName && listName.trim()) {
+      createTaskListMutation.mutate({
+        name: listName.trim(),
+        icon: 'fas fa-list', // Default icon
+      });
+    }
   };
 
   if (isLoading) {
@@ -234,18 +251,23 @@ function TodoApp() {
           onListSelect={handleListSelect}
         />
         <div className="flex-1 flex flex-col">
-          <Header />
+          <Header onCreateList={handleCreateFirstList} />
           <main className="flex-1 p-6 overflow-y-auto">
             {activeList ? (
               <TaskList 
                 listName={activeList.name}
+                taskListId={activeList.id}
                 initialTasks={convertDbTaskListToDisplayTaskList(activeList).tasks} 
               />
             ) : (
               <div className="text-center py-12">
                 <p className="text-gray-600 mb-4">No task lists found</p>
-                <button className="bg-brand-blue text-white px-4 py-2 rounded-lg">
-                  Create your first list
+                <button 
+                  onClick={handleCreateFirstList}
+                  disabled={createTaskListMutation.isPending}
+                  className="bg-brand-blue text-white px-4 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  {createTaskListMutation.isPending ? 'Creating...' : 'Create your first list'}
                 </button>
               </div>
             )}
