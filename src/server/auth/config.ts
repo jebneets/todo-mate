@@ -1,5 +1,5 @@
 import { PrismaAdapter } from "@auth/prisma-adapter";
-import { type DefaultSession, type NextAuthConfig } from "next-auth";
+import { type DefaultSession } from "next-auth";
 import DiscordProvider from "next-auth/providers/discord";
 
 import { db } from "~/server/db";
@@ -48,4 +48,4 @@ export const authConfig = {
       },
     }),
   },
-} satisfies NextAuthConfig;
+};
